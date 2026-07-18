@@ -38,9 +38,9 @@ Dzięki temu kalkulator pomaga uniknąć typowych błędów, takich jak otwarcie
 
 Lub lokalnie:
 
-Pobierz plik `index.html` i otwórz go w dowolnej nowoczesnej przeglądarce.
+Pobierz plik `index.html` i otwórz go w przeglądarce.
 
-> Uwaga: podczas uruchamiania lokalnie (`file://`) niektóre funkcje przeglądarki, takie jak kopiowanie do schowka, mogą być ograniczone.
+> Uwaga: podczas otwierania kalkulatora bezpośrednio z pamięci telefonu niektóre mobilne przeglądarki mogą ograniczać dostęp do schowka. W takim przypadku przyciski kopiowania zostaną automatycznie ukryte — wyniki nadal można zaznaczyć i skopiować ręcznie.
 
 ## Prywatność
 
