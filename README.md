@@ -14,7 +14,6 @@ Aplikacja pomaga szybko obliczyć parametry transakcji na podstawie ceny wejści
 - Częściowy Take Profit
 - Obsługa pozycji LONG i SHORT
 - Zapis ustawień w pamięci przeglądarki
-- Responsywny interfejs dla komputerów i urządzeń mobilnych
 
 ## Walidacja i bezpieczeństwo
 
