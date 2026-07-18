@@ -16,6 +16,22 @@ Aplikacja pomaga szybko obliczyć parametry transakcji na podstawie ceny wejści
 - Zapis ustawień w pamięci przeglądarki
 - Responsywny interfejs dla komputerów i urządzeń mobilnych
 
+## Walidacja i bezpieczeństwo
+
+Kalkulator nie tylko wykonuje obliczenia, ale również wykrywa najczęstsze błędy podczas przygotowywania zleceń futures.
+
+Przed otwarciem pozycji sprawdzane są między innymi:
+
+- poprawność wszystkich danych wejściowych,
+- poprawne zakresy wartości (ryzyko, dźwignia, Take Profit itp.),
+- automatyczne wykrywanie kierunku pozycji (LONG/SHORT),
+- wystarczające saldo futures do otwarcia pozycji,
+- czy likwidacja nie nastąpi przed osiągnięciem Stop Lossa,
+- poprawność parametrów częściowego zamknięcia pozycji (Close Quantity),
+- blokowanie kopiowania wyników w przypadku wykrycia niebezpiecznej konfiguracji.
+
+Dzięki temu kalkulator pomaga uniknąć typowych błędów, takich jak otwarcie zbyt dużej pozycji, niewystarczający margin czy zastosowanie zbyt wysokiej dźwigni prowadzącej do likwidacji przed Stop Lossem.
+
 ## Uruchomienie
 
 `https://Michael-Wisniewski.github.io/kalkulator-pozycji/`
