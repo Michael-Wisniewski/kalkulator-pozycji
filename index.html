@@ -924,8 +924,8 @@
 
   // Przy starcie próbujemy odtworzyć wcześniej zapisany kapitał i saldo.
   try {
-    const savedCapital = localStorage.getItem("mazurDefaultCapital");
-    const savedFuturesBalance = localStorage.getItem("mazurFuturesBalance");
+    const savedCapital = localStorage.getItem("positionCalculatorDefaultCapital");
+    const savedFuturesBalance = localStorage.getItem("positionCalculatorFuturesBalance");
 
     if (savedCapital !== null && Number.isFinite(parseFloat(savedCapital))) {
       document.getElementById("capital").value = savedCapital;
@@ -956,8 +956,8 @@
     }
 
     try {
-      localStorage.setItem("mazurDefaultCapital", String(capital));
-      localStorage.setItem("mazurFuturesBalance", String(futuresBalance));
+      localStorage.setItem("positionCalculatorDefaultCapital", String(capital));
+      localStorage.setItem("positionCalculatorFuturesBalance", String(futuresBalance));
     } catch {
       setStatus("yellow", "Przeglądarka nie pozwala zapisać ustawień lokalnie.");
       return;
