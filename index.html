@@ -14,7 +14,8 @@
       margin: 0;
       min-height: 100vh;
       display: grid;
-      place-items: center;
+      place-items: start center;
+      align-content: start;
       padding: 20px;
       font-family: Arial, sans-serif;
       background: #f3f4f6;
@@ -210,6 +211,7 @@
     }
 
     .small-results {
+      margin-top: 10px;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
@@ -228,6 +230,12 @@
       border-radius: 9px;
       background: #f9fafb;
       border: 1px solid #e5e7eb;
+    }
+
+    .section-divider {
+      margin: 18px 0;
+      border: 0;
+      border-top: 1px solid #e5e7eb;
     }
 
     .small-value {
@@ -302,6 +310,14 @@
     /* =========================================================
        4. DOSTOSOWANIE DO MAŁYCH EKRANÓW
        ========================================================= */
+    /* Przyciski kopiowania ukrywamy wyłącznie wtedy, gdy kalkulator jest
+       otwarty jako lokalny plik (file://) na telefonie. Na komputerze
+       stacjonarnym pozostają widoczne także dla pliku lokalnego. */
+    body.local-file-mobile #copy,
+    body.local-file-mobile #copyClose {
+      display: none;
+    }
+
     @media (max-width: 480px) {
       body {
         padding: 10px;
@@ -451,13 +467,13 @@
       <h2 id="accountSettingsTitle" class="section-title">Ustawienia konta</h2>
 
       <div class="field">
-        <label for="capital">Kapitał zarządzany (USD / USDT)</label>
+        <label for="capital">Kapitał zarządzany (USDT)</label>
         <input id="capital" type="number" step="any" min="0.01" value="100" />
       </div>
 
       <div class="field">
         <label for="futuresBalance">Saldo futures (USDT)</label>
-        <input id="futuresBalance" type="number" step="any" min="0.01" value="70" />
+        <input id="futuresBalance" type="number" step="any" min="0.01" value="100" />
       </div>
 
       <button id="saveSettings" type="button">💾 Zapisz ustawienia</button>
@@ -490,7 +506,7 @@
       <div class="row">
         <div class="field">
           <label for="entry">Entry</label>
-          <input id="entry" type="number" step="any" min="0.00000001" placeholder="np. 64850" autofocus />
+          <input id="entry" type="number" step="any" min="0.00000001" placeholder="np. 64850" />
         </div>
 
         <div class="field">
@@ -510,6 +526,17 @@
         <div class="result-value" id="quantity">—</div>
       </div>
 
+      <div id="status" class="status neutral">Wpisz Entry i Stop Loss.</div>
+
+      <button id="copy" type="button" disabled>📋 Kopiuj quantity</button>
+
+      <hr class="section-divider" />
+
+      <div class="small-result">
+        <div class="result-label">Maksymalna strata na Stop Lossie</div>
+        <div class="small-value" id="maxLoss">—</div>
+      </div>
+
       <div class="small-results">
         <div class="small-result">
           <div class="result-label">Szerokość SL</div>
@@ -527,12 +554,9 @@
         <div class="small-value" id="marginSummary">—</div>
       </div>
 
-      <div id="status" class="status neutral">Wpisz Entry i Stop Loss.</div>
+      <hr class="section-divider" />
 
-      
-      <button id="copy" type="button" hidden disabled>📋 Kopiuj quantity</button>
-
-      <div class="field" style="margin-top:16px;">
+      <div class="field">
         <label for="tpPercent">Take Profit - część pozycji do zamknięcia (%)</label>
         <input id="tpPercent" type="number" step="0.1" min="0.1" max="100" placeholder="np. 50" />
       </div>
@@ -546,7 +570,7 @@
         ⚠ Take Profit musi być pomiędzy 0 a 100%.
       </div>
 
-      <button id="copyClose" type="button" hidden disabled>📋 Kopiuj close quantity</button>
+      <button id="copyClose" type="button" disabled>📋 Kopiuj close quantity</button>
 
 
       <div class="note">
@@ -560,18 +584,27 @@
     <div class="modal" tabindex="-1">
       <h2 id="infoTitle">Jak korzystać z kalkulatora</h2>
 
-      <div class="help-item"><strong>Kapitał zarządzany</strong>Kwota, od której obliczane jest ryzyko transakcji. Przy kapitale 26 455 USDT i ryzyku 1% strata na Stop Lossie wyniesie około 264,55 USDT.</div>
-      <div class="help-item"><strong>Saldo futures</strong>Rzeczywista ilość USDT dostępna na koncie futures. Służy do sprawdzenia, czy wystarczy środków na wymagany margin.</div>
+      <div class="help-item">
+        <strong>Kapitał zarządzany</strong>
+        Kwota, od której obliczane jest ryzyko transakcji. Przy kapitale 10 000 USDT i ryzyku 1% maksymalna strata na Stop Lossie wyniesie około 100 USDT.<br><br>
+        Kapitał zarządzany nie musi być równy saldu na koncie futures. Dzięki wykorzystaniu dźwigni możesz przechowywać część środków poza giełdą, a na koncie futures utrzymywać jedynie kwotę potrzebną do otwierania pozycji. Ryzyko transakcji jest nadal obliczane od całego kapitału, którym zarządzasz.
+      </div>
+      <div class="help-item">
+        <strong>Saldo futures</strong>
+        Rzeczywista ilość USDT znajdująca się na koncie futures. Kalkulator wykorzystuje tę wartość do sprawdzenia, czy posiadasz wystarczające środki na otwarcie pozycji.<br><br>
+        Jeśli cały Twój kapitał znajduje się na koncie futures, wpisz tę samą wartość w polach „Kapitał zarządzany” i „Saldo futures”.
+      </div>      
       <div class="help-item"><strong>Przycisk „Zapisz ustawienia”</strong>Zapisuje jednocześnie kapitał zarządzany i saldo futures w pamięci tej przeglądarki. Obie wartości zostaną automatycznie wczytane przy kolejnym otwarciu kalkulatora.</div>
       <div class="help-item"><strong>Ryzyko</strong>Procent kapitału zarządzanego, który możesz stracić po uruchomieniu Stop Lossa. Kolor pola oznacza poziom ryzyka: bez podświetlenia do 1% włącznie, żółty powyżej 1% i poniżej 5%, czerwony od 5%.</div>
       <div class="help-item"><strong>Dźwignia</strong>Dźwignia ustawiona dla danego kontraktu na giełdzie.</div>
       <div class="help-item"><strong>Entry</strong>Cena wejścia w pozycję.</div>
       <div class="help-item"><strong>Stop Loss</strong>Cena, przy której pozycja ma zostać zamknięta ze stratą.</div>
       <div class="help-item"><strong>Quantity</strong>Ilość aktywa, którą należy wpisać podczas składania zlecenia.</div>
+      <div class="help-item"><strong>Maksymalna strata na Stop Lossie</strong>Pokazuje maksymalną kwotę w USDT, którą możesz stracić po uruchomieniu Stop Lossa zgodnie z ustawionym ryzykiem.</div>
       <div class="help-item"><strong>Szerokość SL</strong>Pokazuje odległość pomiędzy ceną Entry a Stop Lossem. Wartość w nawiasie pokazuje odległość procentową od ceny Entry.</div>
       <div class="help-item"><strong>Odległość do likwidacji</strong>Pokazuje odległość pomiędzy ceną Entry a szacowaną ceną likwidacji. Wartość w nawiasie pokazuje odległość procentową od ceny Entry.</div>
       <div class="help-item"><strong>Wymagany margin / Saldo futures</strong>Pierwsza wartość pokazuje margin potrzebny do otwarcia pozycji, a druga aktualne saldo futures.</div>
-      <div class="help-item"><strong>Take Profit – część pozycji do zamknięcia</strong>Procent pozycji, który chcesz zamknąć na danym Take Profits.</div>
+      <div class="help-item"><strong>Take Profit – część pozycji do zamknięcia</strong>Procent pozycji, który chcesz zamknąć na danym Take Profit.</div>
       <div class="help-item"><strong>Close Quantity</strong>Ilość aktywa, którą należy zamknąć dla podanego procentu pozycji.</div>
 
       <div class="modal-note">Cena likwidacji i wymagany margin są wartościami przybliżonymi. Rzeczywiste wartości na giełdzie mogą różnić się ze względu na opłaty, maintenance margin i zasady kontraktu.</div>
@@ -586,17 +619,37 @@
 
   // Pola, których zmiana powinna natychmiast uruchomić ponowne obliczenie.
   const fieldIds = ["capital", "futuresBalance", "risk", "leverage", "entry", "sl", "tpPercent"];
-  // Przycisk kopiowania pokazujemy tylko wtedy, gdy strona działa w bezpiecznym
-  // kontekście HTTPS lub na lokalnym serwerze developerskim i API schowka istnieje.
-  // Lokalnie otwierane pliki (file://, content://) są celowo wykluczone.
-  const copyAvailable = Boolean(
+  // Zasady widoczności przycisków kopiowania:
+  // 1) strona z internetu — zawsze widoczne,
+  // 2) lokalny plik na komputerze — zawsze widoczne,
+  // 3) lokalny plik na telefonie — automatyczny test kopiowania przy otwarciu;
+  //    przyciski są pokazywane tylko wtedy, gdy test zakończy się powodzeniem.
+  const isLocalFile = window.location.protocol === "file:";
+  const mobileUserAgent = /Android|iPhone|iPod|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
+  const reportsMobileDevice = Boolean(
+    navigator.userAgentData && navigator.userAgentData.mobile
+  );
+  const hasTouchInput = navigator.maxTouchPoints > 0;
+  const isPhoneDevice = reportsMobileDevice || (mobileUserAgent && hasTouchInput);
+
+  function isLocalPhone() {
+    return isLocalFile && isPhoneDevice;
+  }
+
+  function setCopyButtonsVisibility(visible) {
+    document.body.classList.toggle("local-file-mobile", !visible);
+  }
+
+  // Na lokalnym pliku telefonu przyciski pozostają ukryte do zakończenia
+  // automatycznego testu. Na stronie internetowej i komputerze są widoczne zawsze.
+  setCopyButtonsVisibility(!isLocalPhone());
+
+  // Nowoczesne API schowka działa głównie w bezpiecznym kontekście HTTPS.
+  // Dla pliku lokalnego na komputerze używany jest mechanizm zapasowy.
+  const nativeClipboardAvailable = Boolean(
     window.isSecureContext &&
     navigator.clipboard &&
-    typeof navigator.clipboard.writeText === "function" &&
-    (
-      location.protocol === "https:" ||
-      (location.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname))
-    )
+    typeof navigator.clipboard.writeText === "function"
   );
 
   /**
@@ -613,19 +666,16 @@
     return document.getElementById(id).validity.badInput;
   }
 
-  /**
-   * Steruje widocznością i aktywnością obu przycisków kopiowania.
-   * Przyciski są ukryte, gdy środowisko nie obsługuje bezpiecznego schowka.
-   */
+  /** Steruje aktywnością obu przycisków kopiowania. */
   function setCopyButtons(quantityValid, closeQuantityValid) {
     const quantityButton = document.getElementById("copy");
     const closeButton = document.getElementById("copyClose");
 
-    quantityButton.hidden = !copyAvailable;
-    closeButton.hidden = !copyAvailable;
+    quantityButton.hidden = false;
+    closeButton.hidden = false;
 
-    quantityButton.disabled = !copyAvailable || !quantityValid;
-    closeButton.disabled = !copyAvailable || !closeQuantityValid;
+    quantityButton.disabled = !quantityValid;
+    closeButton.disabled = !closeQuantityValid;
   }
 
   /** Formatuje wartości finansowe zgodnie z polską lokalizacją. */
@@ -675,6 +725,7 @@
   /** Czyści wszystkie wyniki i przywraca stan początkowy interfejsu. */
   function clearResults() {
     document.getElementById("quantity").textContent = "—";
+    document.getElementById("maxLoss").textContent = "—";
     document.getElementById("slWidth").textContent = "—";
     document.getElementById("liquidationDistance").textContent = "—";
     document.getElementById("marginSummary").textContent = "—";
@@ -789,6 +840,7 @@
     const liquidationAtOrBeforeStop = bufferAbsolute <= liquidationBoundaryTolerance;
 
     document.getElementById("quantity").textContent = formatQuantity(quantity, 4);
+    document.getElementById("maxLoss").textContent = format(riskAmount, 2) + " USDT";
     // Take Profit jest opcjonalny. Gdy pole jest puste, wynik częściowego
     // zamknięcia pozostaje pusty, ale główne obliczenia nadal są ważne.
     const tpError = document.getElementById("tpError");
@@ -819,15 +871,14 @@
       closeQuantityValid = true;
     }
 
-    setCopyButtons(true, closeQuantityValid);
     document.getElementById("slWidth").textContent =
-      format(stopDistance, 2) + " USD (" + format(slWidthPct, 3) + "%)";
+      format(stopDistance, 2) + " USDT (" + format(slWidthPct, 3) + "%)";
     if (leverage <= 1) {
       document.getElementById("liquidationDistance").textContent =
         "≈100% (praktycznie brak ryzyka likwidacji)";
     } else {
       document.getElementById("liquidationDistance").textContent =
-        format(liquidationDistanceAbsolute, 2) + " USD (" + format(liquidationDistancePct, 3) + "%)";
+        format(liquidationDistanceAbsolute, 2) + " USDT (" + format(liquidationDistancePct, 3) + "%)";
     }
 
     document.getElementById("marginSummary").textContent =
@@ -838,15 +889,20 @@
     // 2) sam brak marginu,
     // 3) sama likwidacja przed SL,
     // 4) układ bezpieczny według zastosowanego przybliżenia.
+    let hasBlockingError = false;
+
     if (!hasEnoughMargin && liquidationAtOrBeforeStop) {
+      hasBlockingError = true;
       if (leverage <= 1) {
         setStatus("red", "Margin niewystarczający. Dodatkowo przy minimalnej dźwigni 1× Stop Loss jest zbyt daleko — ustaw go bliżej ceny wejścia.");
       } else {
         setStatus("red", "Margin niewystarczający, a likwidacja może nastąpić przed Stop Lossem. Zwiększ saldo futures, zmniejsz ryzyko lub zmniejsz dźwignię.");
       }
     } else if (!hasEnoughMargin) {
+      hasBlockingError = true;
       setStatus("red", "Margin niewystarczający. Zwiększ saldo futures, zmniejsz ryzyko lub zwiększ dźwignię.");
     } else if (liquidationAtOrBeforeStop) {
+      hasBlockingError = true;
       if (leverage <= 1) {
         setStatus("red", "Przy minimalnej dźwigni 1× Stop Loss jest zbyt daleko. Ustaw Stop Loss bliżej ceny wejścia.");
       } else {
@@ -855,6 +911,11 @@
     } else {
       setStatus("green", "Margin wystarczający. Stop Loss znajduje się przed likwidacją.");
     }
+
+    // Wartości można kopiować tylko wtedy, gdy kalkulator nie wykrył
+    // błędu blokującego bezpieczne otwarcie pozycji. Błąd dotyczący
+    // opcjonalnego Take Profit blokuje wyłącznie close quantity.
+    setCopyButtons(!hasBlockingError, !hasBlockingError && closeQuantityValid);
   }
 
   /* Każda zmiana danych wejściowych natychmiast odświeża wyniki. */
@@ -870,28 +931,59 @@
    * Kopiuje podaną wartość do schowka i na 1 sekundę zmienia wygląd
    * przycisku na zielone potwierdzenie „Skopiowano”.
    */
-  async function copyResult(button, value, originalText) {
-    if (!copyAvailable || !value || value === "—") return;
+  async function writeToClipboard(value) {
+    if (nativeClipboardAvailable) {
+      try {
+        await navigator.clipboard.writeText(value);
+        return true;
+      } catch {
+        // Gdy przeglądarka zablokuje nowoczesne API, przechodzimy do fallbacku.
+      }
+    }
 
+    const textArea = document.createElement("textarea");
+    textArea.value = value;
+    textArea.setAttribute("readonly", "");
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    let copied = false;
     try {
-      await navigator.clipboard.writeText(value);
-      button.disabled = true;
-      button.classList.add("copy-success");
-      button.textContent = "✓ Skopiowano";
+      copied = document.execCommand("copy");
+    } catch {
+      copied = false;
+    }
 
+    document.body.removeChild(textArea);
+    return copied;
+  }
+
+  async function copyResult(button, value, originalText) {
+    if (!value || value === "—") return;
+
+    const copied = await writeToClipboard(value);
+    if (!copied) {
+      button.textContent = "Nie udało się skopiować";
       setTimeout(() => {
-        button.classList.remove("copy-success");
         button.textContent = originalText;
         calculate();
-      }, 1000);
-    } catch {
-      // Niektóre przeglądarki udostępniają API, lecz blokują zapis.
-      // W takim przypadku bez komunikatu usuwamy niedziałające przyciski.
-      document.querySelectorAll("#copy, #copyClose").forEach(copyButton => {
-        copyButton.hidden = true;
-        copyButton.disabled = true;
-      });
+      }, 1400);
+      return;
     }
+
+    button.disabled = true;
+    button.classList.add("copy-success");
+    button.textContent = "✓ Skopiowano";
+
+    setTimeout(() => {
+      button.classList.remove("copy-success");
+      button.textContent = originalText;
+      calculate();
+    }, 1000);
   }
 
   document.getElementById("copyClose").addEventListener("click", () => {
@@ -985,6 +1077,12 @@
   const closeInfoButton = document.getElementById("closeInfo");
   let lastFocusedElement = null;
 
+  function getFocusableModalElements() {
+    return Array.from(modalBox.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(element => !element.hasAttribute("hidden"));
+  }
+
   /** Otwiera instrukcję i zapamiętuje element, który miał fokus. */
   function openInfoModal() {
     lastFocusedElement = document.activeElement;
@@ -1010,8 +1108,36 @@
   });
 
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && infoModal.classList.contains("open")) {
+    if (!infoModal.classList.contains("open")) return;
+
+    if (event.key === "Escape") {
+      event.preventDefault();
       closeInfoModal();
+      return;
+    }
+
+    if (event.key === "Tab") {
+      const focusableElements = getFocusableModalElements();
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        modalBox.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      } else if (!modalBox.contains(document.activeElement)) {
+        event.preventDefault();
+        firstElement.focus();
+      }
     }
   });
 
@@ -1041,8 +1167,22 @@
     });
   });
 
+  /**
+   * Na lokalnym pliku telefonu sprawdza kopiowanie automatycznie przy otwarciu.
+   * Test odbywa się przed pokazaniem przycisków, więc użytkownik nie zobaczy
+   * niedziałającego przycisku, który później nagle znika.
+   */
+  async function testLocalPhoneCopyOnLoad() {
+    if (!isLocalPhone()) return;
+
+    const testValue = "copy-test";
+    const copied = await writeToClipboard(testValue);
+    setCopyButtonsVisibility(copied);
+  }
+
   // Pierwsze uruchomienie ustawia kolory, komunikaty i stan przycisków.
   calculate();
+  testLocalPhoneCopyOnLoad();
 </script>
 </body>
 </html>
