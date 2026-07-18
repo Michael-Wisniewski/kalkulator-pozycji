@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalkulator pozycji</title>
+  <style>
+    /* =========================================================
+       1. RESET I USTAWIENIA GLOBALNE
+       ========================================================= */
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    /* Główny kontener kalkulatora. Ogranicza szerokość formularza
+       i zapewnia czytelny wygląd zarówno na desktopie, jak i telefonie. */
+    .box {
+      width: min(460px, 100%);
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.06);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.45rem;
+    }
+
+    /* Pasek tytułowy z nazwą kalkulatora i przyciskiem informacji. */
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .info-button {
+      width: 38px;
+      height: 38px;
+      min-height: 38px;
+      margin: 0;
+      padding: 0;
+      flex: 0 0 38px;
+      border: 1px solid #cbd5e1;
+      border-radius: 50%;
+      background: #f9fafb;
+      color: #374151;
+      font-size: 1.2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .info-button:hover,
+    .info-button:focus-visible {
+      background: #e5e7eb;
+      outline: none;
+    }
+
+    .subtitle {
+      margin-bottom: 20px;
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .field {
+      margin-bottom: 13px;
+    }
+
+    /* =========================================================
+       2. SEKCJE FORMULARZA I POLA WEJŚCIOWE
+       ========================================================= */
+    .form-section {
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #f9fafb;
+    }
+
+    .form-section:first-of-type {
+      margin-top: 0;
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1rem;
+      color: #111827;
+    }
+
+    #saveSettings {
+      margin-top: 2px;
+      background: #e5e7eb;
+      color: #111827;
+      font-size: 0.95rem;
+    }
+
+    /* Wizualna klasyfikacja ryzyka:
+       - brak klasy: do 1% włącznie,
+       - risk-warning: powyżej 1% i poniżej 5%,
+       - risk-danger: od 5% wzwyż. */
+    #risk.risk-warning {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, .12);
+    }
+
+    #risk.risk-danger {
+      border-color: #dc2626;
+      background: #fef2f2;
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, .12);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 1rem;
+      color: #374151;
+    }
+
+    input {
+      width: 100%;
+      padding: 16px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      background: #fff;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* =========================================================
+       3. PREZENTACJA WYNIKÓW I KOMUNIKATÓW
+       ========================================================= */
+    .result {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .direction-badge {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 14px;
+      border-radius: 9px;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      border: 1px solid transparent;
+    }
+
+    .neutral-direction {
+      background: #f3f4f6;
+      color: #6b7280;
+      border-color: #e5e7eb;
+    }
+
+    .long-direction {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #86efac;
+    }
+
+    .short-direction {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+
+    .main-result {
+      padding: 15px;
+      border-radius: 9px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 10px;
+    }
+
+    .result-label {
+      font-size: .78rem;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
+    .result-value {
+      margin-top: 4px;
+      font-size: 2.2rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .small-results {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .small-result {
+      padding: 12px;
+      border-radius: 9px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+    }
+
+    .margin-result {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 9px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+    }
+
+    .small-value {
+      margin-top: 4px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 9px;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .neutral {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .yellow {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 16px;
+      border: 0;
+      border-radius: 8px;
+      background: #111827;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #d1d5db;
+      color: #6b7280;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
+    /* Stan krótkiego potwierdzenia po prawidłowym skopiowaniu wartości. */
+    .copy-success,
+    .copy-success:disabled {
+      background: #16a34a;
+      color: #ffffff;
+      opacity: 1;
+      transition: background-color .2s ease, color .2s ease;
+    }
+
+    .note {
+      margin-top: 12px;
+      color: #6b7280;
+      font-size: .76rem;
+      line-height: 1.4;
+    }
+
+    /* =========================================================
+       4. DOSTOSOWANIE DO MAŁYCH EKRANÓW
+       ========================================================= */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      .box {
+        padding: 18px;
+      }
+
+      input, button {
+        min-height: 56px;
+      }
+
+      .result-value {
+        font-size: 2.4rem;
+      }
+
+      .small-value {
+        font-size: 0.95rem;
+      }
+
+      .row, .small-results {
+        grid-template-columns: 1fr;
+      }
+    }
+  
+    /* =========================================================
+       5. KONTROLKI KROKOWE I OKNO INFORMACYJNE
+       ========================================================= */
+
+    /* Większe systemowe przyciski góra/dół dla pól numerycznych. */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button {
+      opacity: 1;
+      height: 44px;
+      width: 32px;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+
+    .stepper {
+      display: grid;
+      grid-template-columns: 56px 1fr 56px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .stepper input {
+      text-align: center;
+    }
+
+    .step-btn {
+      margin: 0;
+      min-height: 56px;
+      padding: 0;
+      background: #e5e7eb;
+      color: #111827;
+      font-size: 1.6rem;
+      line-height: 1;
+      border: 1px solid #cbd5e1;
+    }
+
+    .step-btn:active {
+      background: #d1d5db;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(17, 24, 39, .55);
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(560px, 100%);
+      max-height: min(82vh, 760px);
+      overflow-y: auto;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, .22);
+      padding: 22px;
+    }
+
+    .modal h2 {
+      margin: 0 0 16px;
+      font-size: 1.3rem;
+    }
+
+    .help-item {
+      margin-bottom: 13px;
+      color: #374151;
+      font-size: .94rem;
+      line-height: 1.45;
+    }
+
+    .help-item strong {
+      display: block;
+      margin-bottom: 2px;
+      color: #111827;
+    }
+
+    .modal-note {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f3f4f6;
+      color: #4b5563;
+      font-size: .82rem;
+      line-height: 1.45;
+    }
+
+    .modal-close {
+      margin-top: 18px;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+</style>
+</head>
+<body>
+  <!-- =========================================================
+       GŁÓWNY INTERFEJS KALKULATORA
+       ========================================================= -->
+  <main class="box">
+    <div class="header-row">
+      <h1>Kalkulator pozycji</h1>
+      <button id="openInfo" class="info-button" type="button" aria-label="Otwórz instrukcję" title="Instrukcja">ⓘ</button>
+    </div>
+
+    <!-- Ustawienia zapisywane lokalnie w pamięci przeglądarki. -->
+    <section class="form-section" aria-labelledby="accountSettingsTitle">
+      <h2 id="accountSettingsTitle" class="section-title">Ustawienia konta</h2>
+
+      <div class="field">
+        <label for="capital">Kapitał zarządzany (USD / USDT)</label>
+        <input id="capital" type="number" step="any" min="0.01" value="26455" />
+      </div>
+
+      <div class="field">
+        <label for="futuresBalance">Saldo futures (USDT)</label>
+        <input id="futuresBalance" type="number" step="any" min="0.01" value="10993" />
+      </div>
+
+      <button id="saveSettings" type="button">💾 Zapisz ustawienia</button>
+    </section>
+
+    <!-- Parametry zmieniane osobno dla każdej analizowanej transakcji. -->
+    <section class="form-section" aria-labelledby="tradeParametersTitle">
+      <h2 id="tradeParametersTitle" class="section-title">Parametry transakcji</h2>
+
+      <div class="row">
+        <div class="field">
+          <label for="risk">Ryzyko (%)</label>
+          <div class="stepper">
+            <button type="button" class="step-btn" data-target="risk" data-step="-0.1">−</button>
+            <input id="risk" type="number" step="0.1" min="0.1" value="1" />
+            <button type="button" class="step-btn" data-target="risk" data-step="0.1">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="leverage">Dźwignia</label>
+          <div class="stepper">
+            <button type="button" class="step-btn" data-target="leverage" data-step="-1">−</button>
+            <input id="leverage" type="number" step="1" min="1" value="20" />
+            <button type="button" class="step-btn" data-target="leverage" data-step="1">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="entry">Entry</label>
+          <input id="entry" type="number" step="any" min="0.00000001" placeholder="np. 64850" autofocus />
+        </div>
+
+        <div class="field">
+          <label for="sl">Stop Loss</label>
+          <input id="sl" type="number" step="any" min="0.00000001" placeholder="np. 64600" />
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Wyniki obliczeń, status bezpieczeństwa oraz kalkulator częściowego TP. -->
+    <section class="result">
+      <div id="directionBadge" class="direction-badge neutral-direction">—</div>
+
+      <div class="main-result">
+        <div class="result-label">Quantity</div>
+        <div class="result-value" id="quantity">—</div>
+      </div>
+
+      <div class="small-results">
+        <div class="small-result">
+          <div class="result-label">Szerokość SL</div>
+          <div class="small-value" id="slWidth">—</div>
+        </div>
+
+        <div class="small-result">
+          <div class="result-label">Odległość do likwidacji</div>
+          <div class="small-value" id="liquidationDistance">—</div>
+        </div>
+      </div>
+
+      <div class="margin-result">
+        <div class="result-label">Wymagany margin / Saldo futures</div>
+        <div class="small-value" id="marginSummary">—</div>
+      </div>
+
+      <div id="status" class="status neutral">Wpisz Entry i Stop Loss.</div>
+
+      
+      <button id="copy" type="button" hidden disabled>📋 Kopiuj quantity</button>
+
+      <div class="field" style="margin-top:16px;">
+        <label for="tpPercent">Take Profit - część pozycji do zamknięcia (%)</label>
+        <input id="tpPercent" type="number" step="0.1" min="0.1" max="100" placeholder="np. 50" />
+      </div>
+
+      <div class="main-result">
+        <div class="result-label">Close Quantity</div>
+        <div class="result-value" id="closeQuantity">—</div>
+      </div>
+
+      <div id="tpError" style="display:none;margin-top:8px;color:#991b1b;font-size:.85rem;font-weight:600;">
+        ⚠ Take Profit musi być pomiędzy 0 a 100%.
+      </div>
+
+      <button id="copyClose" type="button" hidden disabled>📋 Kopiuj close quantity</button>
+
+
+      <div class="note">
+        Cena likwidacji i wymagany margin są wartościami przybliżonymi. Rzeczywiste wartości na giełdzie zależą m.in. od maintenance margin, opłat i zasad kontraktu.
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal z instrukcją obsługi. Atrybuty ARIA poprawiają dostępność. -->
+  <div id="infoModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="infoTitle" aria-hidden="true">
+    <div class="modal" tabindex="-1">
+      <h2 id="infoTitle">Jak korzystać z kalkulatora</h2>
+
+      <div class="help-item"><strong>Kapitał zarządzany</strong>Kwota, od której obliczane jest ryzyko transakcji. Przy kapitale 26 455 USDT i ryzyku 1% strata na Stop Lossie wyniesie około 264,55 USDT.</div>
+      <div class="help-item"><strong>Saldo futures</strong>Rzeczywista ilość USDT dostępna na koncie futures. Służy do sprawdzenia, czy wystarczy środków na wymagany margin.</div>
+      <div class="help-item"><strong>Przycisk „Zapisz ustawienia”</strong>Zapisuje jednocześnie kapitał zarządzany i saldo futures w pamięci tej przeglądarki. Obie wartości zostaną automatycznie wczytane przy kolejnym otwarciu kalkulatora.</div>
+      <div class="help-item"><strong>Ryzyko</strong>Procent kapitału zarządzanego, który możesz stracić po uruchomieniu Stop Lossa. Kolor pola oznacza poziom ryzyka: bez podświetlenia do 1% włącznie, żółty powyżej 1% i poniżej 5%, czerwony od 5%.</div>
+      <div class="help-item"><strong>Dźwignia</strong>Dźwignia ustawiona dla danego kontraktu na giełdzie.</div>
+      <div class="help-item"><strong>Entry</strong>Cena wejścia w pozycję.</div>
+      <div class="help-item"><strong>Stop Loss</strong>Cena, przy której pozycja ma zostać zamknięta ze stratą.</div>
+      <div class="help-item"><strong>Quantity</strong>Ilość aktywa, którą należy wpisać podczas składania zlecenia.</div>
+      <div class="help-item"><strong>Szerokość SL</strong>Pokazuje odległość pomiędzy ceną Entry a Stop Lossem. Wartość w nawiasie pokazuje odległość procentową od ceny Entry.</div>
+      <div class="help-item"><strong>Odległość do likwidacji</strong>Pokazuje odległość pomiędzy ceną Entry a szacowaną ceną likwidacji. Wartość w nawiasie pokazuje odległość procentową od ceny Entry.</div>
+      <div class="help-item"><strong>Wymagany margin / Saldo futures</strong>Pierwsza wartość pokazuje margin potrzebny do otwarcia pozycji, a druga aktualne saldo futures.</div>
+      <div class="help-item"><strong>Take Profit – część pozycji do zamknięcia</strong>Procent pozycji, który chcesz zamknąć na danym Take Profits.</div>
+      <div class="help-item"><strong>Close Quantity</strong>Ilość aktywa, którą należy zamknąć dla podanego procentu pozycji.</div>
+
+      <div class="modal-note">Cena likwidacji i wymagany margin są wartościami przybliżonymi. Rzeczywiste wartości na giełdzie mogą różnić się ze względu na opłaty, maintenance margin i zasady kontraktu.</div>
+      <button id="closeInfo" class="modal-close" type="button">Zamknij</button>
+    </div>
+  </div>
+
+<script>
+  /* =========================================================
+     1. KONFIGURACJA I ELEMENTY WSPÓLNE
+     ========================================================= */
+
+  // Pola, których zmiana powinna natychmiast uruchomić ponowne obliczenie.
+  const fieldIds = ["capital", "futuresBalance", "risk", "leverage", "entry", "sl", "tpPercent"];
+  // Przycisk kopiowania pokazujemy tylko wtedy, gdy strona działa w bezpiecznym
+  // kontekście HTTPS lub na lokalnym serwerze developerskim i API schowka istnieje.
+  // Lokalnie otwierane pliki (file://, content://) są celowo wykluczone.
+  const copyAvailable = Boolean(
+    window.isSecureContext &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === "function" &&
+    (
+      location.protocol === "https:" ||
+      (location.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname))
+    )
+  );
+
+  /**
+   * Odczytuje wartość liczbową z pola formularza.
+   * Zwraca NaN, gdy wpis nie jest poprawną liczbą.
+   */
+  function numberValue(id) {
+    const value = parseFloat(document.getElementById(id).value);
+    return Number.isFinite(value) ? value : NaN;
+  }
+
+  /** Sprawdza natywny błąd parsowania pola typu number. */
+  function hasBadInput(id) {
+    return document.getElementById(id).validity.badInput;
+  }
+
+  /**
+   * Steruje widocznością i aktywnością obu przycisków kopiowania.
+   * Przyciski są ukryte, gdy środowisko nie obsługuje bezpiecznego schowka.
+   */
+  function setCopyButtons(quantityValid, closeQuantityValid) {
+    const quantityButton = document.getElementById("copy");
+    const closeButton = document.getElementById("copyClose");
+
+    quantityButton.hidden = !copyAvailable;
+    closeButton.hidden = !copyAvailable;
+
+    quantityButton.disabled = !copyAvailable || !quantityValid;
+    closeButton.disabled = !copyAvailable || !closeQuantityValid;
+  }
+
+  /** Formatuje wartości finansowe zgodnie z polską lokalizacją. */
+  function format(value, decimals = 2) {
+    if (!Number.isFinite(value)) return "—";
+    return value.toLocaleString("pl-PL", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
+
+  /**
+   * Formatuje quantity z kropką dziesiętną, aby wartość była gotowa
+   * do wklejenia w formularzu giełdy.
+   */
+  function formatQuantity(value, decimals = 4) {
+    if (!Number.isFinite(value)) return "—";
+    return value.toFixed(decimals);
+  }
+
+  /** Aktualizuje treść i kolor głównego komunikatu statusowego. */
+  function setStatus(type, text) {
+    const status = document.getElementById("status");
+    status.className = "status " + type;
+    status.textContent = text;
+  }
+
+  /**
+   * Aktualizuje wyłącznie kolor pola ryzyka.
+   * 0,1–1%: neutralnie, >1% i <5%: żółto, >=5%: czerwono.
+   */
+  function updateRiskColor() {
+    const riskInput = document.getElementById("risk");
+    const riskPct = numberValue("risk");
+
+    riskInput.classList.remove("risk-warning", "risk-danger");
+
+    if (!Number.isFinite(riskPct) || riskPct < 0.1) return;
+
+    if (riskPct >= 5) {
+      riskInput.classList.add("risk-danger");
+    } else if (riskPct > 1) {
+      riskInput.classList.add("risk-warning");
+    }
+  }
+
+  /** Czyści wszystkie wyniki i przywraca stan początkowy interfejsu. */
+  function clearResults() {
+    document.getElementById("quantity").textContent = "—";
+    document.getElementById("slWidth").textContent = "—";
+    document.getElementById("liquidationDistance").textContent = "—";
+    document.getElementById("marginSummary").textContent = "—";
+    document.getElementById("closeQuantity").textContent = "—";
+
+    const directionBadge = document.getElementById("directionBadge");
+    directionBadge.textContent = "—";
+    directionBadge.className = "direction-badge neutral-direction";
+
+    setCopyButtons(false, false);
+  }
+
+  /* =========================================================
+     2. GŁÓWNA LOGIKA OBLICZENIOWA
+     ========================================================= */
+
+  /**
+   * Centralna funkcja kalkulatora.
+   * Waliduje dane, rozpoznaje kierunek LONG/SHORT, oblicza wielkość pozycji,
+   * wymagany margin, przybliżoną likwidację oraz część pozycji do zamknięcia.
+   */
+  function calculate() {
+    updateRiskColor();
+
+    const capital = numberValue("capital");
+    const futuresBalance = numberValue("futuresBalance");
+    const riskPct = numberValue("risk");
+    const leverage = numberValue("leverage");
+    const entry = numberValue("entry");
+    const sl = numberValue("sl");
+    const tpPercent = numberValue("tpPercent");
+
+    // Zbieramy wszystkie niepoprawne pola, aby pokazać użytkownikowi
+    // jeden kompletny komunikat zamiast kilku następujących po sobie.
+    const invalidFields = [];
+
+    if (hasBadInput("capital") || !Number.isFinite(capital) || capital <= 0) invalidFields.push("Kapitał zarządzany");
+    if (hasBadInput("futuresBalance") || !Number.isFinite(futuresBalance) || futuresBalance <= 0) invalidFields.push("Saldo futures");
+    if (hasBadInput("risk") || !Number.isFinite(riskPct) || riskPct < 0.1) invalidFields.push("Ryzyko");
+    if (hasBadInput("leverage") || !Number.isFinite(leverage) || leverage < 1) invalidFields.push("Dźwignia");
+
+    const entryInput = document.getElementById("entry").value.trim();
+    const slInput = document.getElementById("sl").value.trim();
+
+    if (entryInput === "" && slInput === "") {
+      clearResults();
+      setStatus("neutral", "Wpisz Entry i Stop Loss.");
+      return;
+    }
+
+    if (hasBadInput("entry") || entryInput === "" || !Number.isFinite(entry) || entry <= 0) {
+      invalidFields.push("Entry");
+    }
+
+    if (hasBadInput("sl") || slInput === "" || !Number.isFinite(sl) || sl <= 0) {
+      invalidFields.push("Stop Loss");
+    }
+
+    if (invalidFields.length > 0) {
+      clearResults();
+      const label = invalidFields.length === 1
+        ? "Niepoprawna wartość: "
+        : "Niepoprawne wartości: ";
+      setStatus("red", label + invalidFields.join(", "));
+      return;
+    }
+
+    if (entry === sl) {
+      clearResults();
+      setStatus("red", "Entry i Stop Loss nie mogą być takie same.");
+      return;
+    }
+
+    // Kierunek pozycji wynika z relacji ceny Stop Loss do ceny wejścia.
+    const isLong = sl < entry;
+
+    const directionBadge = document.getElementById("directionBadge");
+    directionBadge.textContent = isLong ? "LONG" : "SHORT";
+    directionBadge.className = isLong
+      ? "direction-badge long-direction"
+      : "direction-badge short-direction";
+
+    // Kwota ryzyka jest stałym procentem kapitału zarządzanego.
+    // Quantity wynika z podzielenia tej kwoty przez szerokość Stop Lossa.
+    const riskAmount = capital * (riskPct / 100);
+    const stopDistance = Math.abs(entry - sl);
+    const slWidthPct = (stopDistance / entry) * 100;
+    const quantity = riskAmount / stopDistance;
+    const positionValue = quantity * entry;
+    const requiredMargin = positionValue / leverage;
+    const hasEnoughMargin = requiredMargin <= futuresBalance;
+
+    // Uproszczone przybliżenie ruchu do likwidacji.
+    const liquidationMovePct = 100 / leverage;
+
+    // Dla LONG likwidacja jest poniżej entry, dla SHORT powyżej.
+    const liquidationPrice = isLong
+      ? entry * (1 - 1 / leverage)
+      : entry * (1 + 1 / leverage);
+
+    const liquidationDistanceAbsolute = Math.abs(entry - liquidationPrice);
+    const liquidationDistancePct = (liquidationDistanceAbsolute / entry) * 100;
+
+    const bufferAbsolute = isLong
+      ? sl - liquidationPrice
+      : liquidationPrice - sl;
+
+    const bufferPct = (bufferAbsolute / entry) * 100;
+    // Tolerancja chroni przypadki graniczne przed błędami arytmetyki zmiennoprzecinkowej,
+    // np. gdy Stop Loss wypada dokładnie na obliczonej cenie likwidacji.
+    const liquidationBoundaryTolerance = Math.max(Math.abs(entry) * 1e-12, Number.EPSILON);
+    const liquidationAtOrBeforeStop = bufferAbsolute <= liquidationBoundaryTolerance;
+
+    document.getElementById("quantity").textContent = formatQuantity(quantity, 4);
+    // Take Profit jest opcjonalny. Gdy pole jest puste, wynik częściowego
+    // zamknięcia pozostaje pusty, ale główne obliczenia nadal są ważne.
+    const tpError = document.getElementById("tpError");
+    const tpElement = document.getElementById("tpPercent");
+    const tpInput = tpElement.value.trim();
+    const tpBadInput = tpElement.validity.badInput;
+
+    let closeQuantityValid = false;
+
+    if (tpBadInput) {
+      document.getElementById("closeQuantity").textContent = "—";
+      tpError.textContent = "⚠ Niepoprawna wartość: Take Profit";
+      tpError.style.display = "block";
+    } else if (tpInput === "") {
+      document.getElementById("closeQuantity").textContent = "—";
+      tpError.style.display = "none";
+    } else if (!Number.isFinite(tpPercent)) {
+      document.getElementById("closeQuantity").textContent = "—";
+      tpError.textContent = "⚠ Niepoprawna wartość: Take Profit";
+      tpError.style.display = "block";
+    } else if (tpPercent < 0.1 || tpPercent > 100) {
+      document.getElementById("closeQuantity").textContent = "—";
+      tpError.textContent = "⚠ Take Profit musi być pomiędzy 0,1 a 100%.";
+      tpError.style.display = "block";
+    } else {
+      document.getElementById("closeQuantity").textContent = formatQuantity(quantity * tpPercent / 100, 4);
+      tpError.style.display = "none";
+      closeQuantityValid = true;
+    }
+
+    setCopyButtons(true, closeQuantityValid);
+    document.getElementById("slWidth").textContent =
+      format(stopDistance, 2) + " USD (" + format(slWidthPct, 3) + "%)";
+    if (leverage <= 1) {
+      document.getElementById("liquidationDistance").textContent =
+        "≈100% (praktycznie brak ryzyka likwidacji)";
+    } else {
+      document.getElementById("liquidationDistance").textContent =
+        format(liquidationDistanceAbsolute, 2) + " USD (" + format(liquidationDistancePct, 3) + "%)";
+    }
+
+    document.getElementById("marginSummary").textContent =
+      format(requiredMargin, 2) + " USDT / " + format(futuresBalance, 2) + " USDT";
+
+    // Priorytet komunikatów:
+    // 1) jednoczesny brak marginu i ryzyko likwidacji,
+    // 2) sam brak marginu,
+    // 3) sama likwidacja przed SL,
+    // 4) układ bezpieczny według zastosowanego przybliżenia.
+    if (!hasEnoughMargin && liquidationAtOrBeforeStop) {
+      if (leverage <= 1) {
+        setStatus("red", "Margin niewystarczający. Dodatkowo przy minimalnej dźwigni 1× Stop Loss jest zbyt daleko — ustaw go bliżej ceny wejścia.");
+      } else {
+        setStatus("red", "Margin niewystarczający, a likwidacja może nastąpić przed Stop Lossem. Zwiększ saldo futures, zmniejsz ryzyko lub zmniejsz dźwignię.");
+      }
+    } else if (!hasEnoughMargin) {
+      setStatus("red", "Margin niewystarczający. Zwiększ saldo futures, zmniejsz ryzyko lub zwiększ dźwignię.");
+    } else if (liquidationAtOrBeforeStop) {
+      if (leverage <= 1) {
+        setStatus("red", "Przy minimalnej dźwigni 1× Stop Loss jest zbyt daleko. Ustaw Stop Loss bliżej ceny wejścia.");
+      } else {
+        setStatus("red", "Likwidacja może nastąpić przed Stop Lossem. Zmniejsz dźwignię.");
+      }
+    } else {
+      setStatus("green", "Margin wystarczający. Stop Loss znajduje się przed likwidacją.");
+    }
+  }
+
+  /* Każda zmiana danych wejściowych natychmiast odświeża wyniki. */
+  fieldIds.forEach(id => {
+    document.getElementById(id).addEventListener("input", calculate);
+  });
+
+  /* =========================================================
+     3. KOPIOWANIE WYNIKÓW
+     ========================================================= */
+
+  /**
+   * Kopiuje podaną wartość do schowka i na 1 sekundę zmienia wygląd
+   * przycisku na zielone potwierdzenie „Skopiowano”.
+   */
+  async function copyResult(button, value, originalText) {
+    if (!copyAvailable || !value || value === "—") return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      button.disabled = true;
+      button.classList.add("copy-success");
+      button.textContent = "✓ Skopiowano";
+
+      setTimeout(() => {
+        button.classList.remove("copy-success");
+        button.textContent = originalText;
+        calculate();
+      }, 1000);
+    } catch {
+      // Niektóre przeglądarki udostępniają API, lecz blokują zapis.
+      // W takim przypadku bez komunikatu usuwamy niedziałające przyciski.
+      document.querySelectorAll("#copy, #copyClose").forEach(copyButton => {
+        copyButton.hidden = true;
+        copyButton.disabled = true;
+      });
+    }
+  }
+
+  document.getElementById("copyClose").addEventListener("click", () => {
+    const value = document.getElementById("closeQuantity").textContent
+      .replace(/\s/g, "")
+      .replace(",", ".");
+
+    copyResult(
+      document.getElementById("copyClose"),
+      value,
+      "📋 Kopiuj close quantity"
+    );
+  });
+
+  document.getElementById("copy").addEventListener("click", () => {
+    const quantity = document.getElementById("quantity").textContent
+      .replace(/\s/g, "")
+      .replace(",", ".");
+
+    copyResult(
+      document.getElementById("copy"),
+      quantity,
+      "📋 Kopiuj quantity"
+    );
+  });
+
+  /* =========================================================
+     4. PAMIĘĆ LOKALNA USTAWIEŃ KONTA
+     ========================================================= */
+
+  // Przy starcie próbujemy odtworzyć wcześniej zapisany kapitał i saldo.
+  try {
+    const savedCapital = localStorage.getItem("mazurDefaultCapital");
+    const savedFuturesBalance = localStorage.getItem("mazurFuturesBalance");
+
+    if (savedCapital !== null && Number.isFinite(parseFloat(savedCapital))) {
+      document.getElementById("capital").value = savedCapital;
+    }
+
+    if (savedFuturesBalance !== null && Number.isFinite(parseFloat(savedFuturesBalance))) {
+      document.getElementById("futuresBalance").value = savedFuturesBalance;
+    }
+  } catch {
+    // Kalkulator nadal działa, gdy przeglądarka blokuje pamięć lokalną.
+  }
+
+  /**
+   * Waliduje i zapisuje kapitał zarządzany oraz saldo futures
+   * w localStorage bieżącej przeglądarki.
+   */
+  function saveSettings() {
+    const capital = numberValue("capital");
+    const futuresBalance = numberValue("futuresBalance");
+
+    const invalid = [];
+    if (!Number.isFinite(capital) || capital <= 0) invalid.push("Kapitał zarządzany");
+    if (!Number.isFinite(futuresBalance) || futuresBalance <= 0) invalid.push("Saldo futures");
+
+    if (invalid.length > 0) {
+      setStatus("red", "Niepoprawne ustawienia: " + invalid.join(", ") + ".");
+      return;
+    }
+
+    try {
+      localStorage.setItem("mazurDefaultCapital", String(capital));
+      localStorage.setItem("mazurFuturesBalance", String(futuresBalance));
+    } catch {
+      setStatus("yellow", "Przeglądarka nie pozwala zapisać ustawień lokalnie.");
+      return;
+    }
+
+    const button = document.getElementById("saveSettings");
+    button.textContent = "✓ Zapisano";
+
+    setTimeout(() => {
+      button.textContent = "💾 Zapisz ustawienia";
+      calculate();
+    }, 3000);
+  }
+
+  document.getElementById("saveSettings").addEventListener("click", saveSettings);
+
+
+  /* =========================================================
+     5. OBSŁUGA OKNA INFORMACYJNEGO
+     ========================================================= */
+
+  const infoModal = document.getElementById("infoModal");
+  const modalBox = infoModal.querySelector(".modal");
+  const openInfoButton = document.getElementById("openInfo");
+  const closeInfoButton = document.getElementById("closeInfo");
+  let lastFocusedElement = null;
+
+  /** Otwiera instrukcję i zapamiętuje element, który miał fokus. */
+  function openInfoModal() {
+    lastFocusedElement = document.activeElement;
+    infoModal.classList.add("open");
+    infoModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    modalBox.focus();
+  }
+
+  /** Zamyka instrukcję i przywraca fokus na poprzedni element. */
+  function closeInfoModal() {
+    infoModal.classList.remove("open");
+    infoModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    if (lastFocusedElement) lastFocusedElement.focus();
+  }
+
+  openInfoButton.addEventListener("click", openInfoModal);
+  closeInfoButton.addEventListener("click", closeInfoModal);
+
+  infoModal.addEventListener("click", event => {
+    if (event.target === infoModal) closeInfoModal();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && infoModal.classList.contains("open")) {
+      closeInfoModal();
+    }
+  });
+
+  /* =========================================================
+     6. PRZYCISKI ZMIANY RYZYKA I DŹWIGNI
+     ========================================================= */
+
+  // Przyciski „−” i „+” respektują minimalne wartości pól
+  // oraz właściwe zaokrąglenie dla ryzyka i dźwigni.
+  document.querySelectorAll(".step-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const target = document.getElementById(button.dataset.target);
+      const step = parseFloat(button.dataset.step);
+      const current = parseFloat(target.value) || 0;
+      let next = current + step;
+
+      if (button.dataset.target === "risk") {
+        next = Math.max(0.1, Math.round(next * 10) / 10);
+      }
+
+      if (button.dataset.target === "leverage") {
+        next = Math.max(1, Math.round(next));
+      }
+
+      target.value = next;
+      calculate();
+    });
+  });
+
+  // Pierwsze uruchomienie ustawia kolory, komunikaty i stan przycisków.
+  calculate();
+</script>
+</body>
+</html>
