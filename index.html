@@ -348,16 +348,15 @@
        5. KONTROLKI KROKOWE I OKNO INFORMACYJNE
        ========================================================= */
 
-    /* Większe systemowe przyciski góra/dół dla pól numerycznych. */
+    /* Ukrycie systemowych przycisków góra/dół we wszystkich polach numerycznych. */
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button {
-      opacity: 1;
-      height: 44px;
-      width: 32px;
+      -webkit-appearance: none;
       margin: 0;
     }
 
     input[type=number] {
+      appearance: textfield;
       -moz-appearance: textfield;
     }
 
